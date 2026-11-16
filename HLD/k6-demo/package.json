@@ -1,0 +1,13 @@
+{
+  "name": "k6-demo",
+  "version": "1.0.0",
+  "description": "Basic Node http server with k6 performance tests",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test:load": "k6 run k6/load.js",
+    "test:spike": "k6 run k6/spike.js",
+    "test:stress": "k6 run k6/stress.js",
+    "test:soak": "k6 run k6/soak.js"
+  }
+}
