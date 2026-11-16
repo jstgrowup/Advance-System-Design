@@ -3,25 +3,30 @@
 // without them we need one parallel array per attribute.
 public class Main {
     public static void main(String[] args) {
-        // Storing 5 students WITHOUT a class: one array per attribute.
-        // Index i across all arrays is "student i" - nothing in the code enforces that.
-        int[] rollNumbers = new int[5];
-        String[] names = new String[5];
-        String[] marks = new String[5];
-        // Problem: adding a new attribute means adding another array and keeping them in sync.
-        // A class bundles the attributes into one blueprint (see Student below).
-        Student s = new Student();
-        s.name = "Aditya";
-        s.rollNumber = 1;
-        System.out.println(s.name + " has roll number " + s.rollNumber);
+        Car car1 = new Car();
+        Car car2 = new Car();
+        Car car3 = new Car();
+        car3.brand = "BMW";
+        car2.brand = "MD";
+        car1.brand = "JD";
+        Student student = new Student();
+        
     }
 
     // A class is a blueprint, like a Car design that needs an engine and seats.
     // From one blueprint we create many objects (a Maruti, a Ferrari, a Porsche).
     // This is a static nested class so main can create it directly with `new Student()`.
-    static class Student {
-        String name;
-        int rollNumber;
-        float marks;
+    
+}
+ class Car {
+        String brand;
+        String color;
+        void drive() {
+            System.out.println("driving the car");
+        }
     }
+
+    class Student {
+        String name;
+        int age;
 }
