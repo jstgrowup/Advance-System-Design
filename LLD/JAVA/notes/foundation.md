@@ -125,3 +125,10 @@ public class HelloWorld {
     }
 }
 ```
+
+Operators
+
+1. Arithmetic
+2. Realtionsal
+3. Logical
+4. Assignment
