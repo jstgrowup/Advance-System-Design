@@ -6,7 +6,7 @@ A single place to revise everything in the `HLD` folder: system design basics, d
 
 - Every point from your notes is here, regrouped under clear headings and written in simpler words.
 - Each section starts with a **Quick recap**. Read only the recaps for a fast revision, or read the full section for the details.
-- > 💡 **Added explanation:** blocks are short extras that are *not* in your notes. They are only there to help understanding.
+- > 💡 **Added explanation:** blocks are short extras that are _not_ in your notes. They are only there to help understanding.
 - > ⚠️ **Check this:** blocks mark places where the notes are unfinished, unclear, or look wrong. The original wording is kept, so nothing is lost.
 - All of these are also listed at the end in [Notes to Double Check](#notes-to-double-check).
 
@@ -103,12 +103,12 @@ HLD
 - It is simply the **uptime** of a system.
 
 | Availability | Downtime per year | Downtime per month |
-|---|---|---|
-| 99% | 3.65 days | 7.2 hr |
-| 99.9% | 8.7 hrs | 43.2 min |
-| 99.99% | 52 min | 4.3 min |
-| 99.999% | 5.26 min | - |
-| 99.9999% | 31.5 sec | - |
+| ------------ | ----------------- | ------------------ |
+| 99%          | 3.65 days         | 7.2 hr             |
+| 99.9%        | 8.7 hrs           | 43.2 min           |
+| 99.99%       | 52 min            | 4.3 min            |
+| 99.999%      | 5.26 min          | -                  |
+| 99.9999%     | 31.5 sec          | -                  |
 
 - If we don't need the system to be highly available, that's fine, because it will incur some extra cost on us. We have to maximize our uptime.
 
@@ -145,12 +145,12 @@ HLD
 
 **Types of scaling**
 
-| | Vertical Scaling | Horizontal Scaling |
-|---|---|---|
-| Idea | Get a more powerful machine which can take more load | Multiple instances of the same server |
-| Limit | The system has a limit | There is no limit for the scalability (see [3.2](#32-two-scalability-patterns)) |
-| Cost | A big machine costs more as well | - |
-| Extra | - | A load balancer on top reroutes the requests |
+|       | Vertical Scaling                                     | Horizontal Scaling                                                              |
+| ----- | ---------------------------------------------------- | ------------------------------------------------------------------------------- |
+| Idea  | Get a more powerful machine which can take more load | Multiple instances of the same server                                           |
+| Limit | The system has a limit                               | There is no limit for the scalability (see [3.2](#32-two-scalability-patterns)) |
+| Cost  | A big machine costs more as well                     | -                                                                               |
+| Extra | -                                                    | A load balancer on top reroutes the requests                                    |
 
 **Horizontal scaling details**
 
@@ -185,8 +185,8 @@ Clients --> LB --+--> Server 2
 
 - Reliable systems perform their intended function correctly and consistently, even in the face of faults.
 - The difference between available and reliable:
-  - **Availability** asks: *is the system up?*
-  - **Reliability** asks: *is the system doing what it should be doing?*
+  - **Availability** asks: _is the system up?_
+  - **Reliability** asks: _is the system doing what it should be doing?_
 - These systems are available, but they are not reliable. Users tend to lose confidence in a system that gives wrong answers faster than in one that occasionally goes down.
 
 ## 1.3 Domain Name System (DNS)
@@ -209,12 +209,12 @@ Clients --> LB --+--> Server 2
 - Name servers and resource records together allow DNS to effectively act as a lookup system, helping users reach the right websites or services on the internet.
 - Three main components of a resource record: **Type**, **Name**, **Value**.
 
-| Record type | Meaning |
-|---|---|
-| **A** | IPv4 (32-bit address) |
-| **AAAA** | IPv6 (128-bit address) |
-| **CNAME** | Canonical Name record. An alias for another domain name, helping redirect one domain to another |
-| **MX** | SMTP mail servers responsible for receiving emails for a domain |
+| Record type | Meaning                                                                                         |
+| ----------- | ----------------------------------------------------------------------------------------------- |
+| **A**       | IPv4 (32-bit address)                                                                           |
+| **AAAA**    | IPv6 (128-bit address)                                                                          |
+| **CNAME**   | Canonical Name record. An alias for another domain name, helping redirect one domain to another |
+| **MX**      | SMTP mail servers responsible for receiving emails for a domain                                 |
 
 **Other facts**
 
@@ -285,26 +285,26 @@ Browser --(recursive)--> Resolver --(iterative)--> Root server
 Client -> API Gateway -> Usage Plan -> Rate Limit
 ```
 
-| Step | What it does |
-|---|---|
-| **Client** | The user or system making the API request |
-| **API Gateway** | The AWS service that handles incoming API requests |
-| **Usage Plan** | Where the API Key is checked and associated rate limits and quotas are retrieved |
-| **Rate Limit Quota** | The actual rate limits |
-| **Allow / Deny Request** | Based on the rate limit and quota checks, the request is either allowed to proceed or denied |
-| **Backend Service** | If the request is allowed, it's forwarded to the actual backend service that handles the business logic |
-| **Throttle Response** | If the request exceeds the rate limits, a throttle response is sent back to the client |
+| Step                     | What it does                                                                                            |
+| ------------------------ | ------------------------------------------------------------------------------------------------------- |
+| **Client**               | The user or system making the API request                                                               |
+| **API Gateway**          | The AWS service that handles incoming API requests                                                      |
+| **Usage Plan**           | Where the API Key is checked and associated rate limits and quotas are retrieved                        |
+| **Rate Limit Quota**     | The actual rate limits                                                                                  |
+| **Allow / Deny Request** | Based on the rate limit and quota checks, the request is either allowed to proceed or denied            |
+| **Backend Service**      | If the request is allowed, it's forwarded to the actual backend service that handles the business logic |
+| **Throttle Response**    | If the request exceeds the rate limits, a throttle response is sent back to the client                  |
 
 ## 1.5 API Rate Limit Strategies
 
 - It's a technique to control the number of requests a client can make to a server within a specified time window.
 
-| Strategy | How it works | Pros | Cons |
-|---|---|---|---|
-| **1. Fixed window** | A fixed time window is used to count the number of requests | Simple to implement and understand | Potential business issues at the window boundaries, where users may be able to send many requests at the end of one window and the beginning of the next |
-| **2. Leaky bucket** | A request coming in is like adding a drop to the bucket. If the bucket overflows, the request is denied. Requests are processed at a consistent rate and excess requests are dropped | Simple to understand and implement. Smooths out the bursts by processing requests at a consistent rate | May lead to loss of some requests during burst traffic |
-| **3. Token bucket** | One of the most commonly used algorithms. A bucket holds a number of tokens, and each request consumes one token. Tokens are replenished at a fixed rate | - | - |
-| **4. Request quotas** | You assign a quota to users or API keys. When the quota is exhausted, further requests are denied or charged at a higher rate | - | - |
+| Strategy              | How it works                                                                                                                                                                         | Pros                                                                                                   | Cons                                                                                                                                                     |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **1. Fixed window**   | A fixed time window is used to count the number of requests                                                                                                                          | Simple to implement and understand                                                                     | Potential business issues at the window boundaries, where users may be able to send many requests at the end of one window and the beginning of the next |
+| **2. Leaky bucket**   | A request coming in is like adding a drop to the bucket. If the bucket overflows, the request is denied. Requests are processed at a consistent rate and excess requests are dropped | Simple to understand and implement. Smooths out the bursts by processing requests at a consistent rate | May lead to loss of some requests during burst traffic                                                                                                   |
+| **3. Token bucket**   | One of the most commonly used algorithms. A bucket holds a number of tokens, and each request consumes one token. Tokens are replenished at a fixed rate                             | -                                                                                                      | -                                                                                                                                                        |
+| **4. Request quotas** | You assign a quota to users or API keys. When the quota is exhausted, further requests are denied or charged at a higher rate                                                        | -                                                                                                      | -                                                                                                                                                        |
 
 - **Fixed window example:** if you set a limit of 100 requests per hour, every hour the counter resets and the user can send up to 100 requests in the next hour. A limit of 100 req/hour resets at the top of every hour.
 - **Request quotas example:** each user may have a quota of 1000 API requests per month.
@@ -334,12 +334,12 @@ Client -> API Gateway -> Usage Plan -> Rate Limit
 
 - Performance testing helps us in checking the **latency and throughput** of the application.
 
-| Test | What we do | What it shows |
-|---|---|---|
-| **Load testing** (Avg) | Send the normal, expected amount of traffic | Whether the app works well on a regular day |
-| **Spike testing** | Suddenly send a huge amount of traffic in a very short time | Whether the app survives the jump and recovers afterwards |
-| **Stress testing** | Keep increasing the traffic beyond the normal limit until the app breaks | The maximum load the app can take |
-| **Soak testing** | Run a normal amount of traffic for a very long time (hours or days) | Slow problems, such as the app using more and more memory |
+| Test                   | What we do                                                               | What it shows                                             |
+| ---------------------- | ------------------------------------------------------------------------ | --------------------------------------------------------- |
+| **Load testing** (Avg) | Send the normal, expected amount of traffic                              | Whether the app works well on a regular day               |
+| **Spike testing**      | Suddenly send a huge amount of traffic in a very short time              | Whether the app survives the jump and recovers afterwards |
+| **Stress testing**     | Keep increasing the traffic beyond the normal limit until the app breaks | The maximum load the app can take                         |
+| **Soak testing**       | Run a normal amount of traffic for a very long time (hours or days)      | Slow problems, such as the app using more and more memory |
 
 - Tool: **K6**.
 - Then we get to know what scenarios are breaking.
@@ -671,24 +671,24 @@ CREATE TABLE COMMENTS (
 
 ## 2.5 Relationships
 
-| Relationship | Meaning | Example from the notes | Rule from the notes |
-|---|---|---|---|
-| **1:1** | one to one | A supplier has one account and one account belongs to one supplier. One supplier is only related to one record of one accounts record | In the accounts table, the supplier ID should be unique, and vice versa |
-| **1:N** | one to many | A book belongs to an author, but an author can have many books. A comment belongs to a post, but a post can have many comments | In the book table, the author ID should be unique |
-| **N:1** | many to one | - | - |
-| **N:M** | many to many | One physician can treat many patients, and one patient can be treated by many physicians | We need a third table for the mappings. The third table is basically ... |
+| Relationship | Meaning      | Example from the notes                                                                                                                | Rule from the notes                                                      |
+| ------------ | ------------ | ------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| **1:1**      | one to one   | A supplier has one account and one account belongs to one supplier. One supplier is only related to one record of one accounts record | In the accounts table, the supplier ID should be unique, and vice versa  |
+| **1:N**      | one to many  | A book belongs to an author, but an author can have many books. A comment belongs to a post, but a post can have many comments        | In the book table, the author ID should be unique                        |
+| **N:1**      | many to one  | -                                                                                                                                     | -                                                                        |
+| **N:M**      | many to many | One physician can treat many patients, and one patient can be treated by many physicians                                              | We need a third table for the mappings. The third table is basically ... |
 
 > ⚠️ **Check this:** the notes have no explanation under **N:1**, and the **N:M** note stops at "The third table is basically".
 
 ## 2.6 Design DB for LeetCode
 
-| Table | Columns |
-|---|---|
-| **User** | `id`, `email`, `password`, `subscription_type` |
-| **Problems** | `id`, `name`, `details` (markdown string, not HTML, because it can be written as a script) |
-| **Tag** | `id`, `name` |
-| **Problems_tags** | `problem_id`, `tag_id` |
-| **Submission** | `user_id`, `problem_id`, `status`, `lang`, `code` |
+| Table             | Columns                                                                                    |
+| ----------------- | ------------------------------------------------------------------------------------------ |
+| **User**          | `id`, `email`, `password`, `subscription_type`                                             |
+| **Problems**      | `id`, `name`, `details` (markdown string, not HTML, because it can be written as a script) |
+| **Tag**           | `id`, `name`                                                                               |
+| **Problems_tags** | `problem_id`, `tag_id`                                                                     |
+| **Submission**    | `user_id`, `problem_id`, `status`, `lang`, `code`                                          |
 
 ```text
 User ──< Submission >── Problems >──< Tag
@@ -701,18 +701,18 @@ User ──< Submission >── Problems >──< Tag
 
 - No one database will be able to solve the problem. There is a good variety of databases to solve problems.
 
-| Situation (criteria) | Choice |
-|---|---|
-| Based on the team's knowledge | We can also prioritize a particular DB |
-| There is good knowledge of RDBMS | You can prefer **RDBMS** |
-| Graph-like structure, like social media applications | Graph-like databases, such as **Neo4j**, **InfiniteGraph**, etc. |
-| Unstructured data, probably schemaless | Store it in the form of documents, so **document-based databases** are very useful |
-| **Key-value pairs**, let's say user ID <-> connection data | **Redis**, **DynamoDB** are a good choice |
-| Geolocation data | **Geospatial** DBs like **Redis** geospatial, **Firebase** geospatial, etc. |
-| Relational data which is also structured | **RDBMS** is good |
-| Transactional data | **RDBMS** is also good |
-| Bookings | In any case, there also you can use **RDBMS**. It is good, concurrency as well |
-| **File storage**: images, videos or any files | **Blob storage** (binary large object), like AWS S3 |
+| Situation (criteria)                                       | Choice                                                                             |
+| ---------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| Based on the team's knowledge                              | We can also prioritize a particular DB                                             |
+| There is good knowledge of RDBMS                           | You can prefer **RDBMS**                                                           |
+| Graph-like structure, like social media applications       | Graph-like databases, such as **Neo4j**, **InfiniteGraph**, etc.                   |
+| Unstructured data, probably schemaless                     | Store it in the form of documents, so **document-based databases** are very useful |
+| **Key-value pairs**, let's say user ID <-> connection data | **Redis**, **DynamoDB** are a good choice                                          |
+| Geolocation data                                           | **Geospatial** DBs like **Redis** geospatial, **Firebase** geospatial, etc.        |
+| Relational data which is also structured                   | **RDBMS** is good                                                                  |
+| Transactional data                                         | **RDBMS** is also good                                                             |
+| Bookings                                                   | In any case, there also you can use **RDBMS**. It is good, concurrency as well     |
+| **File storage**: images, videos or any files              | **Blob storage** (binary large object), like AWS S3                                |
 
 > ⚠️ **Check this:** the notes end this list with a single word, "SQL".
 
@@ -763,12 +763,12 @@ COMMIT;
 
 **Reference:** <https://en.wikipedia.org/wiki/Isolation_(database_systems)>
 
-| Property | What it means |
-|---|---|
-| **Atomicity** | The DB executes a transaction completely, or rolls back any partial completions. It ensures no partial updates. A good way to implement this is **log-based recovery**. |
-| **Consistency** | Our data moves from a valid state to another valid state. DBs having high consistency will never leave your data in an inconsistent state. |
-| **Isolation** | A transaction property that defines how concurrent transactions should be handled. |
-| **Durability** | A guarantee provided by the DB such that if a transaction is committed, all the changes done by it will persist even if there is a DB crash. |
+| Property        | What it means                                                                                                                                                           |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Atomicity**   | The DB executes a transaction completely, or rolls back any partial completions. It ensures no partial updates. A good way to implement this is **log-based recovery**. |
+| **Consistency** | Our data moves from a valid state to another valid state. DBs having high consistency will never leave your data in an inconsistent state.                              |
+| **Isolation**   | A transaction property that defines how concurrent transactions should be handled.                                                                                      |
+| **Durability**  | A guarantee provided by the DB such that if a transaction is committed, all the changes done by it will persist even if there is a DB crash.                            |
 
 - **Isolation example:** let's say two concurrent users are trying to book a ticket for anything. There, isolation comes into play.
 - Issues with concurrency:
@@ -790,12 +790,12 @@ COMMIT;
 - An isolation level means what degree of independence we will give to two transactions.
 - MySQL gives 4 levels of isolation in general.
 
-| Level | What can still happen | Notes |
-|---|---|---|
+| Level                                      | What can still happen                                                    | Notes                                                                                                                                                                                             |
+| ------------------------------------------ | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **1. Read Uncommitted** (lowest isolation) | All the problems: phantom reads, dirty reads, non-repeatable reads, etc. | Like saying there is no isolation at all. For the further isolation levels, MySQL has to make extra efforts. Good option if only reads are going to happen and no writes, as it keeps things fast |
-| **2. Read Committed** | Dirty reads will not happen, but the rest of the problems still exist | Two identical reads in one transaction may still give different values (non-repeatable reads problem). Two transactions will never see an uncommitted ... |
-| **3. Repeatable Reads** | Phantom reads can occur | Neither the dirty read nor the non-repeatable read problem will occur |
-| **4. Serializable** (highest isolation) | None, all the above problems are solved | Behaves as if two transactions are executed one after another instead of in parallel. Best to keep the isolation as Serializable as far as possible, but it is slow |
+| **2. Read Committed**                      | Dirty reads will not happen, but the rest of the problems still exist    | Two identical reads in one transaction may still give different values (non-repeatable reads problem). Two transactions will never see an uncommitted ...                                         |
+| **3. Repeatable Reads**                    | Phantom reads can occur                                                  | Neither the dirty read nor the non-repeatable read problem will occur                                                                                                                             |
+| **4. Serializable** (highest isolation)    | None, all the above problems are solved                                  | Behaves as if two transactions are executed one after another instead of in parallel. Best to keep the isolation as Serializable as far as possible, but it is slow                               |
 
 ```sql
 SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED
@@ -1088,12 +1088,12 @@ Users -> Elastic Load Balancer -> Rails app servers (many EC2)
 
 - For network interaction to be done via HTTP on a REST API, we define HTTP methods in a way that they auto-describe the APIs. It's not mandatory to follow this, and anything else is also just a recommendation.
 
-| Method | What the notes say |
-|---|---|
-| **GET** | If a REST API has the GET HTTP method associated, then probably you will be getting some resource |
-| **POST** | If a REST API has the POST HTTP method, then probably it will be creating some resource |
-| **DELETE** | Probably associating some resource |
-| **PUT** | (used in the URL examples below) updating the customer |
+| Method     | What the notes say                                                                                |
+| ---------- | ------------------------------------------------------------------------------------------------- |
+| **GET**    | If a REST API has the GET HTTP method associated, then probably you will be getting some resource |
+| **POST**   | If a REST API has the POST HTTP method, then probably it will be creating some resource           |
+| **DELETE** | Probably associating some resource                                                                |
+| **PUT**    | (used in the URL examples below) updating the customer                                            |
 
 ### URL design
 
@@ -1101,13 +1101,13 @@ Users -> Elastic Load Balancer -> Rails app servers (many EC2)
 
 **Examples** (e-commerce, resource: customer)
 
-| # | URL | Method | What it does |
-|---|---|---|---|
-| 1 | `https://www.mykar/customers/1` | GET | Fetches the details of the customer with ID 1 |
-| 2 | `https://www.mykar/customers` | GET | Fetches all the customers |
-| 3 | `https://www.mykar/customers/12` | DELETE | Deletes the customer with ID 12 |
-| 4 | `https://www.mykar/customers` | POST | Creates the customer |
-| 5 | `https://www.mykar/customers/1` | PUT | Updates the customer |
+| #   | URL                              | Method | What it does                                  |
+| --- | -------------------------------- | ------ | --------------------------------------------- |
+| 1   | `https://www.mykar/customers/1`  | GET    | Fetches the details of the customer with ID 1 |
+| 2   | `https://www.mykar/customers`    | GET    | Fetches all the customers                     |
+| 3   | `https://www.mykar/customers/12` | DELETE | Deletes the customer with ID 12               |
+| 4   | `https://www.mykar/customers`    | POST   | Creates the customer                          |
+| 5   | `https://www.mykar/customers/1`  | PUT    | Updates the customer                          |
 
 - Resource names mentioned in the URLs are **plural**, and the hierarchy should also be like this: an order exists because of a customer, so probably the customer comes first.
 - To describe an ID in a URL, we generally represent it as:
@@ -1193,17 +1193,17 @@ Users -> Elastic Load Balancer -> Rails app servers (many EC2)
 
 ## 4.8 REST vs gRPC vs GraphQL
 
-*(Built only from the points in the notes above.)*
+_(Built only from the points in the notes above.)_
 
-| | REST | gRPC | GraphQL |
-|---|---|---|---|
-| **Style** | Resource-oriented URLs | Action-oriented functions (RPC) | One `/graphql` URL, the payload changes |
-| **Data format** | JSON | Protocol buffers (binary), serialized and deserialized | The notes only mention the request/response fields |
-| **Type safety** | Not type safe, we validate manually | Type safe, types can be enforced | - |
-| **Speed** | Relatively slower (HTTP 1.1) | Much faster (latest HTTP, light payload) | - |
-| **Who defines the calls** | You define URLs and methods yourself | The creator defines the functions, the consumer only calls them | The client picks only the fields it wants |
-| **Learning curve** | Easy to understand, whole ecosystem supports it | A little bit of a learning curve | - |
-| **Fits when** | Everyone follows the same recommendations and the code must be easy for other devs to understand | You want speed and type safety | Different clients need different fields without new endpoints |
+|                           | REST                                                                                             | gRPC                                                            | GraphQL                                                       |
+| ------------------------- | ------------------------------------------------------------------------------------------------ | --------------------------------------------------------------- | ------------------------------------------------------------- |
+| **Style**                 | Resource-oriented URLs                                                                           | Action-oriented functions (RPC)                                 | One `/graphql` URL, the payload changes                       |
+| **Data format**           | JSON                                                                                             | Protocol buffers (binary), serialized and deserialized          | The notes only mention the request/response fields            |
+| **Type safety**           | Not type safe, we validate manually                                                              | Type safe, types can be enforced                                | -                                                             |
+| **Speed**                 | Relatively slower (HTTP 1.1)                                                                     | Much faster (latest HTTP, light payload)                        | -                                                             |
+| **Who defines the calls** | You define URLs and methods yourself                                                             | The creator defines the functions, the consumer only calls them | The client picks only the fields it wants                     |
+| **Learning curve**        | Easy to understand, whole ecosystem supports it                                                  | A little bit of a learning curve                                | -                                                             |
+| **Fits when**             | Everyone follows the same recommendations and the code must be easy for other devs to understand | You want speed and type safety                                  | Different clients need different fields without new endpoints |
 
 ---
 
@@ -1212,11 +1212,13 @@ Users -> Elastic Load Balancer -> Rails app servers (many EC2)
 These are the places in your notes that look unfinished, unclear or possibly wrong. They are also marked in the sections above.
 
 **1. Introduction**
+
 - Auto scaling: "When it reaches 60" (60 of what?) and a lone "ELB" bullet.
 - DNS: "Root - Main directory for the main" looks unfinished. Section numbering jumps from 1 to 3.
 - Latency: "Geographic load balancing" and "Least connections" sit under "Reasons for latency". The ALB vs NLB difference is not explained.
 
 **2. DBMS**
+
 - The `USERS` table has no `PASSWORD` column, but the inserts use it. "Insert multiple" uses empty `()` placeholders.
 - Pagination: "starting from the 3rd row" with `OFFSET 4`.
 - `COMMENTS` table: `USER_ID` has no datatype. "filtering the things out depending" ends without saying what on.
@@ -1225,11 +1227,13 @@ These are the places in your notes that look unfinished, unclear or possibly wro
 - Read Committed: "will never see an uncommitted" is unfinished.
 
 **3. Understanding Scalability**
+
 - "During any LeetCode contest as well, the traffic" is unfinished.
 - "From 16M to 25M" does not say what is counted.
 - "There might be a query pattern" is unfinished.
 
 **4. REST APIs**
+
 - "Platform independence" (1% chance), "Service evolution" (ends at "probably we have to enhance"), and the **Note** sentence.
 - DELETE: "Probably associating some resource".
 - URL typos or oddities: `mykar` vs `mykart`, and `/v1/customers/customers/...`.
@@ -1240,38 +1244,38 @@ These are the places in your notes that look unfinished, unclear or possibly wro
 
 # Glossary
 
-| Term | Meaning |
-|---|---|
-| **PRD** | Product Requirements Document, made from the functional requirements |
-| **Uptime** | The time a system is up and running |
-| **SPOF** | Single Point of Failure, for example a single load balancer |
-| **LB / ELB** | Load balancer / AWS Elastic Load Balancer |
-| **Warm instances** | Servers kept ready in advance so spikes don't wait for boot-up |
-| **DNS** | Domain Name System, the internet phone book mapping names to IPs |
-| **TLD** | Top Level Domain, for example `.com`, `.io` |
-| **CNAME / A / AAAA / MX** | DNS record types (alias / IPv4 / IPv6 / mail servers) |
-| **Rate limiting** | Limiting how many requests a client can send in a time window |
-| **Latency** | End-to-end wait time (response time) for a request |
-| **Throughput** | Number of completed requests per unit of time |
-| **P95** | 95th percentile of the response times |
-| **RDBMS** | Relational Database Management System (MySQL, PGSQL, MSSQL) |
-| **Primary key** | A unique identifier column that can never be duplicated |
-| **Foreign key** | A column that points to a row in another table and is checked against it |
-| **Constraint** | A rule on a table, such as `NOT NULL`, `UNIQUE` or a foreign key |
-| **Transaction** | A group of steps that either all complete (commit) or all roll back (abort) |
-| **ACID** | Atomicity, Consistency, Isolation, Durability |
-| **Dirty read** | Reading a row changed by another transaction that is not yet committed |
-| **Non-repeatable read** | Reading a row twice and getting different values because another transaction committed in between |
-| **Phantom read** | A repeated read that sees new or missing rows (still possible in Repeatable Read) |
-| **Deadlock** | Two transactions each holding a lock the other needs, so neither can proceed |
-| **Pessimistic locking** | Lock the row first (`SELECT ... FOR UPDATE`) |
-| **Optimistic locking** | No lock, use a version number and roll back on mismatch |
-| **TTL** | Time To Live, how long a Redis record stays before it is evicted automatically |
-| **N+1 query** | One query for the list, then one extra query for each item in it |
-| **Cold start** | The time a system needs to warm up (connections, Redis, infra) before it is fast |
-| **API** | Application Programming Interface, a contract for how other systems talk to your software |
-| **REST** | Representational State Transfer, a set of recommendations for designing APIs |
-| **RPC / gRPC / tRPC** | Remote Procedure Call / Google's RPC framework / RPC technology for TypeScript |
-| **Protocol buffers** | Light, binary message format used by gRPC |
-| **GraphQL** | The client requests only the fields it wants through a single `/graphql` URL |
-| **SOAP** | Simple Object Access Protocol, another way to make APIs |
+| Term                      | Meaning                                                                                           |
+| ------------------------- | ------------------------------------------------------------------------------------------------- |
+| **PRD**                   | Product Requirements Document, made from the functional requirements                              |
+| **Uptime**                | The time a system is up and running                                                               |
+| **SPOF**                  | Single Point of Failure, for example a single load balancer                                       |
+| **LB / ELB**              | Load balancer / AWS Elastic Load Balancer                                                         |
+| **Warm instances**        | Servers kept ready in advance so spikes don't wait for boot-up                                    |
+| **DNS**                   | Domain Name System, the internet phone book mapping names to IPs                                  |
+| **TLD**                   | Top Level Domain, for example `.com`, `.io`                                                       |
+| **CNAME / A / AAAA / MX** | DNS record types (alias / IPv4 / IPv6 / mail servers)                                             |
+| **Rate limiting**         | Limiting how many requests a client can send in a time window                                     |
+| **Latency**               | End-to-end wait time (response time) for a request                                                |
+| **Throughput**            | Number of completed requests per unit of time                                                     |
+| **P95**                   | 95th percentile of the response times                                                             |
+| **RDBMS**                 | Relational Database Management System (MySQL, PGSQL, MSSQL)                                       |
+| **Primary key**           | A unique identifier column that can never be duplicated                                           |
+| **Foreign key**           | A column that points to a row in another table and is checked against it                          |
+| **Constraint**            | A rule on a table, such as `NOT NULL`, `UNIQUE` or a foreign key                                  |
+| **Transaction**           | A group of steps that either all complete (commit) or all roll back (abort)                       |
+| **ACID**                  | Atomicity, Consistency, Isolation, Durability                                                     |
+| **Dirty read**            | Reading a row changed by another transaction that is not yet committed                            |
+| **Non-repeatable read**   | Reading a row twice and getting different values because another transaction committed in between |
+| **Phantom read**          | A repeated read that sees new or missing rows (still possible in Repeatable Read)                 |
+| **Deadlock**              | Two transactions each holding a lock the other needs, so neither can proceed                      |
+| **Pessimistic locking**   | Lock the row first (`SELECT ... FOR UPDATE`)                                                      |
+| **Optimistic locking**    | No lock, use a version number and roll back on mismatch                                           |
+| **TTL**                   | Time To Live, how long a Redis record stays before it is evicted automatically                    |
+| **N+1 query**             | One query for the list, then one extra query for each item in it                                  |
+| **Cold start**            | The time a system needs to warm up (connections, Redis, infra) before it is fast                  |
+| **API**                   | Application Programming Interface, a contract for how other systems talk to your software         |
+| **REST**                  | Representational State Transfer, a set of recommendations for designing APIs                      |
+| **RPC / gRPC / tRPC**     | Remote Procedure Call / Google's RPC framework / RPC technology for TypeScript                    |
+| **Protocol buffers**      | Light, binary message format used by gRPC                                                         |
+| **GraphQL**               | The client requests only the fields it wants through a single `/graphql` URL                      |
+| **SOAP**                  | Simple Object Access Protocol, another way to make APIs                                           |
