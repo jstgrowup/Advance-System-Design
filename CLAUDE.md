@@ -18,13 +18,15 @@ Touch only that one file, never its neighbours. Do it right away, with no confir
 - **Structure:** proper heading hierarchy (`#`, `##`, `###`). Loose titles become headings.
 - **Formatting:** lists, tables, spacing, alignment, and code fences with a language tag.
 - **Language:** grammar, spelling, punctuation, and clearer wording.
+- **Readability:** split a long sentence into shorter ones, or into sub-bullets, only when it clearly reads better. Do not split sentences that are already fine. Use your own judgment. The goal is notes that look and read as well as possible, with the same meaning and the same points.
 - **Links:** fix broken relative links and image paths (e.g. `HLD/images/...`) so they point to the right file.
 
 Hard rules:
 
 - **Stay faithful to what I wrote.** Never delete, change, or reinterpret a fact, example, number, or code line. Reword only for clarity.
-- **Do not add content** on your own. Anything beyond formatting needs my OK first. Once I approve, put it inside a `> 💡 **Added explanation:**` block (see General).
-- **If the notes look incomplete** (a missing step, an unfinished sentence, a skipped concept), do not fill it in. After the fix, list the gaps as short suggestions ("You may have missed X. Add it?") and wait for my answer.
+- **Do not change my content.** Never alter or remove what I wrote. Only extra information from you may be added, and only inside a `> 💡 **Added explanation:**` block (see General).
+- **If the notes look incomplete** (a missing step, an unfinished sentence, a skipped concept, a missing trade-off or fix), do not ask me. Fill the gap directly with a short 💡 block next to the relevant point. Keep it as short as possible: one or two lines, only the key fact. I will tell you to remove a block if I don't want it.
+- Do not ask questions unless you are truly blocked (e.g. no file is named or open).
 - Keep my file names and folder layout. Only edit the one file.
 - When done, give a short summary of what changed. Do not commit.
 
