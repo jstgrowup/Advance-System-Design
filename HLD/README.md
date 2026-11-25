@@ -8,6 +8,7 @@ A single place to revise everything in the `HLD` folder: system design basics, d
 - Each section starts with a **Quick recap**. Read only the recaps for a fast revision, or read the full section for the details.
 - > 💡 **Added explanation:** blocks are short extras that are _not_ in your notes. They are only there to help understanding.
 - > ⚠️ **Check this:** blocks mark places where the notes are unfinished, unclear, or look wrong. The original wording is kept, so nothing is lost.
+- > 💡 **Added explanation (diagram):** blocks hold flow diagrams (Mermaid). They show as pictures on GitHub and in VS Code's markdown preview.
 - All of these are also listed at the end in [Notes to Double Check](#notes-to-double-check).
 
 ---
@@ -50,8 +51,13 @@ A single place to revise everything in the `HLD` folder: system design basics, d
    - [4.6 tRPC](#46-trpc)
    - [4.7 GraphQL](#47-graphql)
    - [4.8 REST vs gRPC vs GraphQL](#48-rest-vs-grpc-vs-graphql)
-5. [Notes to Double Check](#notes-to-double-check)
-6. [Glossary](#glossary)
+5. [Databases at Scale](#5-databases-at-scale)
+   - [5.1 The Database as a Bottleneck](#51-the-database-as-a-bottleneck)
+   - [5.2 Stateful vs Stateless](#52-stateful-vs-stateless)
+   - [5.3 Scaling Databases](#53-scaling-databases)
+   - [5.4 Partitioning](#54-partitioning)
+6. [Notes to Double Check](#notes-to-double-check)
+7. [Glossary](#glossary)
 
 ---
 
@@ -62,7 +68,8 @@ HLD
 ├── 1. Introduction         -> what a system must do and how well (requirements, DNS, rate limits, latency)
 ├── 2. DBMS                 -> where the data lives (SQL, transactions, isolation, locking)
 ├── 3. Understanding Scalability -> how to survive heavy traffic (scaling, LeetCode case study)
-└── 4. REST APIs            -> how the outside world talks to your system (REST, RPC, gRPC, GraphQL)
+├── 4. REST APIs            -> how the outside world talks to your system (REST, RPC, gRPC, GraphQL)
+└── 5. Databases at Scale   -> when the DB is the bottleneck (stateful vs stateless, scaling, partitioning)
 ```
 
 ---
@@ -143,6 +150,19 @@ HLD
 5. Here, scalability matters a lot as well.
 6. If we are looking at a gradual increase, that is fine. But if there is a sudden spike all at once, Hotstar can't spend time booting up servers, as it takes time. So what they do is keep **warm instances**.
 
+> 💡 **Added explanation (diagram):** the Hotstar traffic flow.
+>
+> ```mermaid
+> flowchart TD
+>   A["Dhoni is batting: traffic goes up"] --> B["Dhoni gets out"]
+>   B --> C["Users click back to the homepage"]
+>   C --> D["Many concurrent users call the recommendation and history APIs"]
+>   D --> E{"Are the APIs ready for the load?"}
+>   E -- No --> F["Blunder"]
+>   E -- Yes --> G["Homepage keeps working"]
+>   H["Sudden spike: no time to boot servers, so keep warm instances"] --> G
+> ```
+
 **Types of scaling**
 
 |       | Vertical Scaling                                     | Horizontal Scaling                                                              |
@@ -163,6 +183,20 @@ HLD
 Clients --> LB --+--> Server 2
                  +--> Server 3
 ```
+
+> 💡 **Added explanation (diagram):** horizontal scaling with a load balancer and a secondary load balancer.
+>
+> ```mermaid
+> flowchart LR
+>   C["Clients"] --> LB1["Load balancer"]
+>   C -.-> LB2["Secondary load balancer (avoids the SPOF)"]
+>   LB1 --> S1["Server 1"]
+>   LB1 --> S2["Server 2"]
+>   LB1 --> S3["Server 3"]
+>   LB2 -.-> S1
+>   LB2 -.-> S2
+>   LB2 -.-> S3
+> ```
 
 **Auto Scaling**
 
@@ -261,6 +295,25 @@ Browser --(recursive)--> Resolver --(iterative)--> Root server
                                   --(iterative)--> algocamp.io name server --> IP
 ```
 
+> 💡 **Added explanation (diagram):** recursive and iterative DNS query, step by step.
+>
+> ```mermaid
+> sequenceDiagram
+>   participant B as Browser
+>   participant R as Resolver
+>   participant Root as Root server
+>   participant T as TLD server for io
+>   participant N as Name server of algocamp.io
+>   B->>R: Recursive: IP of www.algocamp.io?
+>   R->>Root: Iterative: IP of www.algocamp.io?
+>   Root-->>R: I don't know, ask the .io TLD server
+>   R->>T: IP of www.algocamp.io?
+>   T-->>R: I don't know, ask the name server of algocamp.io
+>   R->>N: IP of www.algocamp.io?
+>   N-->>R: The IP
+>   R-->>B: The final IP
+> ```
+
 ### Caching in DNS
 
 - It's like taking notes to remember, so you don't have to ask for it every time.
@@ -271,6 +324,19 @@ Browser --(recursive)--> Resolver --(iterative)--> Root server
 3. **DNS resolver cache** - Your ISP or DNS resolver also caches DNS information.
 
 - Cache eviction policies mentioned: **LRU**, **LFU**.
+
+> 💡 **Added explanation (diagram):** the order in which DNS caches are checked.
+>
+> ```mermaid
+> flowchart LR
+>   Q["Need an IP"] --> B{"Browser cache?"}
+>   B -- Hit --> R1["Use the IP"]
+>   B -- Miss --> O{"OS cache?"}
+>   O -- Hit --> R1
+>   O -- Miss --> D{"DNS resolver cache?"}
+>   D -- Hit --> R1
+>   D -- Miss --> F["Ask the DNS servers: Root, TLD, name server"]
+> ```
 
 > ⚠️ **Check this:** the line "Root - Main directory for the main" looks unfinished. The original numbering also jumps from "1. DNS Hierarchy" to "3. Caching in DNS" (there is no section 2).
 
@@ -295,6 +361,17 @@ Client -> API Gateway -> Usage Plan -> Rate Limit
 | **Backend Service**      | If the request is allowed, it's forwarded to the actual backend service that handles the business logic |
 | **Throttle Response**    | If the request exceeds the rate limits, a throttle response is sent back to the client                  |
 
+> 💡 **Added explanation (diagram):** the rate limiting request flow.
+>
+> ```mermaid
+> flowchart LR
+>   C["Client"] --> G["API Gateway"]
+>   G --> U["Usage Plan: check the API key, get the limits and quotas"]
+>   U --> L{"Within the rate limit and quota?"}
+>   L -- Allow --> B["Backend service"]
+>   L -- Deny --> T["Throttle response to the client"]
+> ```
+
 ## 1.5 API Rate Limit Strategies
 
 - It's a technique to control the number of requests a client can make to a server within a specified time window.
@@ -308,6 +385,27 @@ Client -> API Gateway -> Usage Plan -> Rate Limit
 
 - **Fixed window example:** if you set a limit of 100 requests per hour, every hour the counter resets and the user can send up to 100 requests in the next hour. A limit of 100 req/hour resets at the top of every hour.
 - **Request quotas example:** each user may have a quota of 1000 API requests per month.
+
+> 💡 **Added explanation (diagram):** leaky bucket.
+>
+> ```mermaid
+> flowchart LR
+>   R["Incoming request, like a drop"] --> F{"Bucket full?"}
+>   F -- No --> Q["Bucket"]
+>   Q -- "leaks at a consistent rate" --> P["Request processed"]
+>   F -- Yes --> D["Request denied"]
+> ```
+
+> 💡 **Added explanation (diagram):** token bucket.
+>
+> ```mermaid
+> flowchart LR
+>   A["Tokens added at a fixed rate"] --> T["Token bucket"]
+>   R["Request"] --> C{"Token available?"}
+>   T --> C
+>   C -- Yes --> U["Use one token and process the request"]
+>   C -- No --> X["Request denied"]
+> ```
 
 ## 1.6 Latency and Throughput
 
@@ -631,6 +729,15 @@ CREATE TABLE COMMENTS (
 
 - **Joins** allow us to combine the tables (next section).
 
+> 💡 **Added explanation (diagram):** how the tables point to each other through foreign keys.
+>
+> ```mermaid
+> erDiagram
+>   USERS ||--o{ POSTS : "USER_ID"
+>   USERS ||--o{ COMMENTS : "USER_ID"
+>   POSTS ||--o{ COMMENTS : "POST_ID"
+> ```
+
 > ⚠️ **Check this:** the first `COMMENTS` table has `USER_ID` with no datatype, and the sentence "we are filtering the things out depending" ends without saying depending on what.
 
 ## 2.4 Joins
@@ -678,6 +785,17 @@ CREATE TABLE COMMENTS (
 | **N:1**      | many to one  | -                                                                                                                                     | -                                                                        |
 | **N:M**      | many to many | One physician can treat many patients, and one patient can be treated by many physicians                                              | We need a third table for the mappings. The third table is basically ... |
 
+> 💡 **Added explanation (diagram):** the relationships.
+>
+> ```mermaid
+> erDiagram
+>   SUPPLIER ||--|| ACCOUNT : "1 to 1"
+>   AUTHOR ||--o{ BOOK : "1 to N"
+>   POST ||--o{ COMMENT : "1 to N"
+>   PHYSICIAN ||--o{ MAPPING_TABLE : "has"
+>   PATIENT ||--o{ MAPPING_TABLE : "has"
+> ```
+
 > ⚠️ **Check this:** the notes have no explanation under **N:1**, and the **N:M** note stops at "The third table is basically".
 
 ## 2.6 Design DB for LeetCode
@@ -696,6 +814,16 @@ User ──< Submission >── Problems >──< Tag
 ```
 
 > 💡 **Added explanation:** `Problems_tags` is the "third table" for the many-to-many link between problems and tags (one problem has many tags, one tag belongs to many problems).
+
+> 💡 **Added explanation (diagram):** how the LeetCode tables connect.
+>
+> ```mermaid
+> erDiagram
+>   USER ||--o{ SUBMISSION : makes
+>   PROBLEMS ||--o{ SUBMISSION : has
+>   PROBLEMS ||--o{ PROBLEMS_TAGS : has
+>   TAG ||--o{ PROBLEMS_TAGS : has
+> ```
 
 ## 2.7 Which Database to Choose
 
@@ -730,6 +858,16 @@ START TRANSACTION;
 -- Code Steps
 COMMIT;
 ```
+
+> 💡 **Added explanation (diagram):** commit or abort.
+>
+> ```mermaid
+> flowchart LR
+>   S["START TRANSACTION"] --> St["Run all the steps"]
+>   St --> D{"Did all the steps complete?"}
+>   D -- Yes --> C["COMMIT: the changes persist"]
+>   D -- No --> A["ABORT: the DB rolls back all the operations"]
+> ```
 
 **Transaction demo DB**
 
@@ -803,6 +941,33 @@ SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED
 
 **Question from the notes:** is there a way to achieve serializable-like safety with a faster approach? The answer is **locking** (next section).
 
+> 💡 **Added explanation (diagram):** a dirty read (the values are only an illustration).
+>
+> ```mermaid
+> sequenceDiagram
+>   participant T1 as Transaction 1
+>   participant DB as Database
+>   participant T2 as Transaction 2
+>   T1->>DB: UPDATE a row (not committed yet)
+>   T2->>DB: SELECT the same row
+>   DB-->>T2: Returns the uncommitted value
+>   T1->>DB: ROLLBACK
+>   Note over T2: T2 used a value that never became real (dirty read)
+> ```
+
+> 💡 **Added explanation (diagram):** a non-repeatable read (the values are only an illustration).
+>
+> ```mermaid
+> sequenceDiagram
+>   participant T1 as Transaction 1
+>   participant DB as Database
+>   participant T2 as Transaction 2
+>   T1->>DB: SELECT the row (value 10)
+>   T2->>DB: UPDATE the row to 20 and COMMIT
+>   T1->>DB: SELECT the same row again (value 20)
+>   Note over T1: Same read, different value (non-repeatable read)
+> ```
+
 > ⚠️ **Check this:** the Read Committed note ends with "will never see an uncommitted" and does not finish the sentence.
 
 ## 2.11 Locking
@@ -833,6 +998,16 @@ Txn1 holds A ──waits for──> B
 Txn2 holds B ──waits for──> A      (each waits for the other, so neither can move)
 ```
 
+> 💡 **Added explanation (diagram):** the deadlock.
+>
+> ```mermaid
+> flowchart LR
+>   T1["Txn1"] -- "holds lock on" --> A["Resource A"]
+>   T2["Txn2"] -- "holds lock on" --> B["Resource B"]
+>   T1 -. "waits for" .-> B
+>   T2 -. "waits for" .-> A
+> ```
+
 ### 2.11.2 Optimistic locking
 
 - You keep a **version number** and a timestamp as a version number, and we are not going to take any lock.
@@ -849,6 +1024,21 @@ Txn2 holds B ──waits for──> A      (each waits for the other, so neither
 > Row version = 5.  Txn A and Txn B both read it (version 5).
 > Txn A commits first  -> checks version is still 5 -> OK -> writes, version becomes 6.
 > Txn B tries to commit -> its copy says 5, DB now says 6 -> mismatch -> rollback (retry).
+> ```
+
+> 💡 **Added explanation (diagram):** optimistic locking with a version number.
+>
+> ```mermaid
+> sequenceDiagram
+>   participant A as Txn A
+>   participant DB as Database
+>   participant B as Txn B
+>   A->>DB: Read the row (version 5)
+>   B->>DB: Read the row (version 5)
+>   A->>DB: Commit: is the version still 5?
+>   DB-->>A: Yes, write it and set the version to 6
+>   B->>DB: Commit: is the version still 5?
+>   DB-->>B: No, it is 6 now, so roll back and retry
 > ```
 
 ### Booking example (why locking is a problem for payments)
@@ -879,6 +1069,25 @@ User 1 picks room 10 -> app checks Redis -> free -> SET room:10 (TTL 30s)
 User 2 picks room 10 -> app checks Redis -> taken -> booking not allowed
 If User 1 never confirms -> TTL expires after 30s -> record deleted -> room is free again
 ```
+
+> 💡 **Added explanation (diagram):** the Redis lock with TTL.
+>
+> ```mermaid
+> sequenceDiagram
+>   participant U1 as User 1
+>   participant U2 as User 2
+>   participant App as App
+>   participant R as Redis
+>   U1->>App: Pick room 10
+>   App->>R: Is room 10 taken?
+>   R-->>App: Free
+>   App->>R: SET room:10 with TTL 30s
+>   U2->>App: Pick room 10
+>   App->>R: Is room 10 taken?
+>   R-->>App: Taken
+>   App-->>U2: Booking not allowed
+>   Note over R: If User 1 never confirms, the TTL expires after 30s and the room is free again
+> ```
 
 ---
 
@@ -928,6 +1137,15 @@ If User 1 never confirms -> TTL expires after 30s -> record deleted -> room is f
 - We have to make sure to test, like spike testing, chaos testing and stress testing, and preemptively see what might go wrong. You can't wait for the match day to test everything.
 - Testing infrastructure is also a good thing to focus on.
 
+> 💡 **Added explanation (diagram):** auto scaling vs warm instances.
+>
+> ```mermaid
+> flowchart LR
+>   A["Traffic goes up"] --> B{"Can auto scaling add machines in time?"}
+>   B -- "Yes, gradual increase" --> C["Auto scaling adds machines"]
+>   B -- "No, sudden jump like 16M to 25M" --> D["Use warm instances prepared before the match"]
+> ```
+
 > ⚠️ **Check this:** "From 16M to 25M" does not say what is being counted (probably concurrent users).
 
 ## 3.3 Availability SLA
@@ -962,6 +1180,18 @@ Users -> Elastic Load Balancer -> Rails app servers (many EC2)
                                     '-- AWS S3 (test cases)
 ```
 
+> 💡 **Added explanation (diagram):** the LeetCode architecture.
+>
+> ```mermaid
+> flowchart TD
+>   U["Users"] --> LB["Elastic Load Balancer"]
+>   LB --> APP["Rails app servers on many EC2"]
+>   APP --> DB["MySQL 5.6 on AWS RDS"]
+>   APP --> RD["Redis (ElastiCache) + Sidekiq async jobs"]
+>   APP --> DK["Docker instances for code submissions, same server"]
+>   APP --> S3["AWS S3 for test cases"]
+> ```
+
 ### Known optimizations
 
 1. **Removing and improving on any N+1 query**
@@ -989,6 +1219,39 @@ Users -> Elastic Load Balancer -> Rails app servers (many EC2)
    - Instead of waiting, they started giving the test traffic to warm up the infra, like Locust, before 3 PM, so that the infrastructure doesn't take time to start when it's 3 PM.
 6. **MySQL upscale**
    - Vertically scaled MySQL instance -> `m5.16xlarge`.
+
+> 💡 **Added explanation (diagram):** the N+1 query.
+>
+> ```mermaid
+> flowchart TD
+>   Q1["1 query: all the posts of a user"] --> P["For each of the N posts"]
+>   P --> Q2["1 query per post: the recent 5 comments"]
+>   Q2 --> T["Together: N + 1 queries"]
+> ```
+
+> 💡 **Added explanation (diagram):** spreading the start of the contest.
+>
+> ```mermaid
+> flowchart LR
+>   U["Users for the 3 PM contest"] --> R["Random start time for each user"]
+>   R --> S1["3:00"]
+>   R --> S2["3:01 and so on"]
+>   R --> S3["Up to 3:05"]
+>   S1 --> L["Initial load is spread out"]
+>   S2 --> L
+>   S3 --> L
+> ```
+
+> 💡 **Added explanation (diagram):** bulk writes through Redis.
+>
+> ```mermaid
+> flowchart LR
+>   U["Users"] --> A["App servers"]
+>   A -- "write the queries" --> R["Scaled Redis"]
+>   R --> C["Cron job (every 10 seconds)"]
+>   C -- "bulk write" --> DB["MySQL"]
+>   A -. "show a loader until then" .-> U
+> ```
 
 ### Conclusion
 
@@ -1028,6 +1291,14 @@ Users -> Elastic Load Balancer -> Rails app servers (many EC2)
 - That's where **APIs** come into the picture.
 - CodeChef internally used the service from SPOJ as the backend service.
 - It will be our responsibility to expose the functionalities of this system so that the outer world can consume it. Maybe some frontend teams in our own organization, or some third organization who just need our logic.
+
+> 💡 **Added explanation (diagram):** why we need an API.
+>
+> ```mermaid
+> flowchart LR
+>   F["Frontend team or another organization"] --> API["API: the contract"]
+>   API --> S["URL shortener service: create, get all, edit, delete, get the original URL"]
+> ```
 
 **API** stands for **Application Programming Interface**. If we have a software and we want to define a contract for this software so that any other system can communicate to this software, then we need to use an API to describe the contract and expose the functionality. Inside the contract, you define:
 
@@ -1109,6 +1380,18 @@ Users -> Elastic Load Balancer -> Rails app servers (many EC2)
 | 4   | `https://www.mykar/customers`    | POST   | Creates the customer                          |
 | 5   | `https://www.mykar/customers/1`  | PUT    | Updates the customer                          |
 
+> 💡 **Added explanation (diagram):** a client calling a REST API.
+>
+> ```mermaid
+> flowchart LR
+>   C["Client"] -- "GET /customers/1" --> A["REST API"]
+>   C -- "GET /customers" --> A
+>   C -- "POST /customers" --> A
+>   C -- "PUT /customers/1" --> A
+>   C -- "DELETE /customers/12" --> A
+>   A --> R["customer resource, sent as JSON"]
+> ```
+
 - Resource names mentioned in the URLs are **plural**, and the hierarchy should also be like this: an order exists because of a customer, so probably the customer comes first.
 - To describe an ID in a URL, we generally represent it as:
   - `http://www.mykart.com/customers/:customerId/orders/:orderId`
@@ -1153,6 +1436,20 @@ Users -> Elastic Load Balancer -> Rails app servers (many EC2)
 - Internally, these functions are automatically converted to an HTTP request or whatever protocol is used, but we as developers do not need to care about putting the URL, HTTP method, etc.
 - We delegate all those things, like methods and all, to the RPC.
 
+> 💡 **Added explanation (diagram):** an RPC call.
+>
+> ```mermaid
+> sequenceDiagram
+>   participant C as Consumer
+>   participant R as RPC layer
+>   participant S as Creator's server
+>   C->>R: Call a function
+>   R->>S: Converted automatically to an HTTP request or another protocol
+>   S->>S: Run the function the creator defined
+>   S-->>R: Result
+>   R-->>C: Return value
+> ```
+
 ## 4.5 gRPC
 
 - gRPC is an RPC framework by Google.
@@ -1175,6 +1472,14 @@ Users -> Elastic Load Balancer -> Rails app servers (many EC2)
 - The binary conversion of protobuffer is much lighter than the JSON conversion, by the process called serialization and deserialization.
 - gRPC by default uses the latest version of HTTP, but REST uses the HTTP 1.1 version, which is relatively slower.
 
+> 💡 **Added explanation (diagram):** how gRPC sends data.
+>
+> ```mermaid
+> flowchart LR
+>   A["Client: message in protocol buffer"] -- "serialize to binary" --> N["Network: light payload"]
+>   N -- "deserialize" --> B["Server: message in protocol buffer"]
+> ```
+
 > ⚠️ **Check this:** the notes say "In gRPC, we don't send the data via protocol buffer". That looks like the opposite of the rest of the section, which says protocol buffers (the `message Person` example) are what gRPC uses. It probably should read "we send the data via protocol buffer". Also, "gRPC is relatively new, that's why" does not say why what.
 
 ## 4.6 tRPC
@@ -1191,6 +1496,16 @@ Users -> Elastic Load Balancer -> Rails app servers (many EC2)
 - **Apollo GraphQL:** <https://www.apollographql.com/>
 - **Apollo Client:** <https://www.apollographql.com/docs/react>
 
+> 💡 **Added explanation (diagram):** GraphQL.
+>
+> ```mermaid
+> flowchart LR
+>   C1["Client 1"] -- "asks: roll number, name" --> G["/graphql, one URL"]
+>   C2["Client 2"] -- "asks: address, marital status" --> G
+>   G --> S["Backend exposes all the fields and cherry-picks the requested ones"]
+>   S --> R["Only the requested fields come back"]
+> ```
+
 ## 4.8 REST vs gRPC vs GraphQL
 
 _(Built only from the points in the notes above.)_
@@ -1204,6 +1519,207 @@ _(Built only from the points in the notes above.)_
 | **Who defines the calls** | You define URLs and methods yourself                                                             | The creator defines the functions, the consumer only calls them | The client picks only the fields it wants                     |
 | **Learning curve**        | Easy to understand, whole ecosystem supports it                                                  | A little bit of a learning curve                                | -                                                             |
 | **Fits when**             | Everyone follows the same recommendations and the code must be easy for other devs to understand | You want speed and type safety                                  | Different clients need different fields without new endpoints |
+
+---
+
+# 5. Databases at Scale
+
+> **Quick recap**
+>
+> - We usually scale only the application servers, but the **database server** can be the bottleneck too.
+> - **Stateful:** the DB lives inside the application server, and a hash-based load balancer sends each user to the same server. **Stateless:** the DB lives outside the application servers.
+> - A single DB server can crash, so we must scale it. **Vertical scaling** has an upper limit, needs data migration, and still leaves a SPOF.
+> - **Partitioning** splits the data so searches cover less data. Types: column-based, row-based and range partitioning.
+
+## 5.1 The Database as a Bottleneck
+
+- Usually, we only focus on scaling the application server.
+- Many times, the bottleneck can be the database server as well, which we usually just ignore.
+- Let's say we have three application servers, and all of them talk to the same database.
+- Now the question is: where should we store the data in a database?
+- We have two ways to store the data: stateful and stateless.
+
+> 💡 **Added explanation (diagram):** three application servers using the same database.
+>
+> ```mermaid
+> flowchart TD
+>   A1["Application server 1"] --> DB[("Same database")]
+>   A2["Application server 2"] --> DB
+>   A3["Application server 3"] --> DB
+> ```
+
+## 5.2 Stateful vs Stateless
+
+### Stateful
+
+- We have the DB instances inside the application server itself.
+- Example: a user chatting on ChatGPT.
+  - There will be an ML model, let's say an LLM.
+  - Let's say we have the ML model in another server. Instead of putting that ML model outside, we have it inside the application server itself.
+  - These application servers are very much capable as well.
+  - The benefit is that we can remove the network latency it takes to send data between the application server and the ML model.
+- ChatGPT will also have context management, and the context will be inside the DB server only.
+- The issue with this approach:
+  - On the 2nd message, the application server will first fetch the context from the DB server.
+  - Then it has to pass that context to the LLM, which is bad.
+- But what if we keep the DB server inside the application server only?
+- What we can do is put a **hash-based load balancer**:
+  - User 1 will always be routed to server A only.
+  - Every user will be allocated a server of their own.
+  - Now we also have smaller DB instances.
+  - The information about who sent the request will be there with that server.
+- If your application needs context, then stateful is better.
+
+> 💡 **Added explanation (diagram):** the issue with the DB outside, and the fix with a hash-based load balancer.
+>
+> ```mermaid
+> sequenceDiagram
+>   participant U as User
+>   participant App as Application server
+>   participant DB as DB server
+>   participant L as LLM
+>   U->>App: 2nd message
+>   App->>DB: Fetch the context
+>   DB-->>App: Context
+>   App->>L: Message with the context
+>   L-->>App: Reply
+>   App-->>U: Reply
+>   Note over App,DB: Extra trip to the DB server on every message (the issue)
+> ```
+
+> 💡 **Added explanation (diagram):** stateful with a hash-based load balancer.
+>
+> ```mermaid
+> flowchart LR
+>   U1["User 1"] --> LB["Hash-based load balancer"]
+>   U2["User 2"] --> LB
+>   LB -- "User 1 always goes here" --> SA["Server A: app + small DB"]
+>   LB -- "every user gets a server of their own" --> SB["Server B: app + small DB"]
+> ```
+
+### Stateless
+
+- We have the database outside the application server.
+- Here, the DB instance is separate from the application servers.
+- In interviews, they want you to take care of all the failure points, and that includes the database server as well.
+
+> 💡 **Added explanation (diagram):** stateless.
+>
+> ```mermaid
+> flowchart LR
+>   A1["Application server 1"] --> DB[("Database outside the application servers")]
+>   A2["Application server 2"] --> DB
+>   A3["Application server 3"] --> DB
+> ```
+
+> 💡 **Added explanation:**
+>
+> - Benefit of stateless: any application server can handle any request, so scaling the application servers is easy.
+> - Trade-off: every request needs an extra network call to the database.
+> - Typical failure points: application server, load balancer, database server, network.
+
+> ⚠️ **Check this:** the Stateful point says "DB instances inside the application server", but the example talks about an ML model inside the application server. It is not clear whether the example is an analogy for the DB.
+
+### Case study: GitHub
+
+- GitHub had its primary key as an auto-increment ID.
+- Numbers usually have an upper cap. We cannot store infinite values in an int (in C++, for example).
+- This happened to them: one of the databases reached this limit, and those databases started breaking or failing.
+
+> 💡 **Added explanation:**
+>
+> - A signed 32-bit int tops out at 2,147,483,647.
+> - A common fix is a 64-bit `BIGINT` ID.
+> - This is an example of a database failure point.
+
+## 5.3 Scaling Databases
+
+### 1. Arranging the data properly
+
+#### DB sharding
+
+- We want to save ourselves from DB issues.
+- One of the simplest issues in a DB:
+  - Let's say the DB is running on an AWS server, and slowly we increased the load to 1M/sec.
+  - The server can crash, right? It's as simple as that.
+  - Ultimately, it's just a server, and a server can fail. That is the bare minimum.
+- When we think of increasing the capacity of the DB machine, we either think of vertical scaling or horizontal scaling.
+
+#### Vertical scaling
+
+- Vertical scaling has an upper limit on how big the machine can get.
+- When I increase the capacity, I also have to migrate the data from M1 to M2:
+  - We have to bring the old machine down and the new machine up for a smooth transition.
+  - All the application servers then start pointing to the new database.
+- During the migration, new data can come in at that very moment. We have to migrate again and again while scaling.
+- In AWS, we have **AWS RDS**. It is a service through which I can get a database server with the complete DB hosted.
+- On an EC2 instance, you can also host the database server yourself. With RDS, AWS hosts the database for you.
+- We still have a SPOF issue for the vertically scalable thing.
+
+> 💡 **Added explanation (diagram):** vertical scaling and migration.
+>
+> ```mermaid
+> flowchart TD
+>   A["The DB machine cannot handle the load"] --> B["Get a bigger machine M2"]
+>   B --> C["Migrate the data from M1 to M2 (new data keeps coming in)"]
+>   C --> D["Bring the old machine down and the new machine up"]
+>   D --> E["All the application servers point to M2"]
+>   E --> F["Still a SPOF"]
+> ```
+
+> ⚠️ **Check this:** "1. Arranging the data properly" is the only numbered item, and the "DB sharding" heading under it only talks about server failure and scaling. It does not explain sharding itself yet.
+
+## 5.4 Partitioning
+
+- In simple terms, if we divide our data and try to partition it, that is called partitioning.
+- If there are three tables: T1, T2, T3.
+
+### Why partition?
+
+- Let's say one table has 100M records, and we need to search through those records.
+- That is pretty high, and the latency will be high.
+- What if we reduce the size of the data to 1/100 of the records? Then the whole DB won't be searched.
+
+### Partitioning types
+
+- **Column-based:** if we have so many fields, then we segregate the fields among other tables.
+- **Row-based:** we have a very big table. We put all the fields in one DB and segregate the rows.
+  - Let's say one sheet for standard 10-11, another for 12:10, etc.
+- We actually take the data and put that into the column.
+
+> 💡 **Added explanation:**
+>
+> - Column-based partitioning is also called vertical partitioning. Row-based is horizontal partitioning.
+> - Partitioning splits data inside one DB. Sharding spreads it across multiple DB servers.
+
+> 💡 **Added explanation (diagram):** partitioning types.
+>
+> ```mermaid
+> flowchart TD
+>   T["Big table"] --> C["Column-based: split the fields (columns) among other tables"]
+>   T --> R["Row-based: all the fields in one DB, split the rows"]
+>   R --> P1["Partition 1: some rows"]
+>   R --> P2["Partition 2: other rows"]
+> ```
+
+### Range partitioning
+
+- The first 1000 records go in one partition, or 1000-10000 go to partition 2.
+- We don't need anything complex to just create the partition.
+- MySQL will create separate files, and we reduce the time used for searching.
+- Adding indexes will also be much faster; read from multiple…
+
+> 💡 **Added explanation:** Indexes are built per partition, which is why adding them is faster.
+
+> 💡 **Added explanation (diagram):** range partitioning.
+>
+> ```mermaid
+> flowchart LR
+>   T["Table"] --> P1["Partition 1: first 1000 records"]
+>   T --> P2["Partition 2: records 1000 to 10000"]
+> ```
+
+> ⚠️ **Check this:** "12:10" in the row-based example may mean "12th". "We actually take the data and put that into the column" does not say which type it belongs to. The last range partitioning line ("read from multiple…") is unfinished.
 
 ---
 
@@ -1239,6 +1755,12 @@ These are the places in your notes that look unfinished, unclear or possibly wro
 - URL typos or oddities: `mykar` vs `mykart`, and `/v1/customers/customers/...`.
 - "If you want to send the data in the resource which is not directly related to the resource" is unfinished.
 - gRPC: "we don't send the data via protocol buffer" looks like the opposite of what is meant. "gRPC is relatively new, that's why" is unfinished.
+
+**5. Databases at Scale**
+
+- Stateful: "DB instances inside the application server" vs the example about an ML model inside the application server.
+- "1. Arranging the data properly" has no item 2, and the "DB sharding" heading does not explain sharding itself yet.
+- Partitioning: "12:10" in the row-based example, "We actually take the data and put that into the column", and the unfinished "read from multiple…".
 
 ---
 
@@ -1279,3 +1801,9 @@ These are the places in your notes that look unfinished, unclear or possibly wro
 | **Protocol buffers**      | Light, binary message format used by gRPC                                                         |
 | **GraphQL**               | The client requests only the fields it wants through a single `/graphql` URL                      |
 | **SOAP**                  | Simple Object Access Protocol, another way to make APIs                                           |
+| **Stateful**              | The DB lives inside the application server, and each user is routed to the same server            |
+| **Stateless**             | The DB lives outside the application servers                                                      |
+| **Hash-based LB**         | A load balancer that always routes the same user to the same server                               |
+| **AWS RDS**               | AWS service that gives you a database server with the complete DB hosted                          |
+| **Partitioning**          | Dividing the data so a search covers less data (column-based, row-based, range)                   |
+| **Range partitioning**    | Splitting rows into partitions by ranges, for example the first 1000 records in partition 1       |

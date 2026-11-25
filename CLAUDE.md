@@ -45,6 +45,7 @@ Steps:
    - `> 💡 **Added explanation:**` blocks for extras that are not in my notes.
    - `> ⚠️ **Check this:**` blocks for unclear, unfinished, or wrong-looking notes. Keep my original wording and also list them in **Notes to Double Check**.
    - New terms go in the **Glossary**. Update **The Big Picture** tree for new sections.
+   - Flow diagrams are Mermaid (`mermaid` code fence) inside a `> 💡 **Added explanation (diagram):**` block, placed right after the points they explain. Add one for any new flow, sequence, or relationship, keep it small, and keep existing ASCII diagrams.
 4. Every point from my notes must appear in the guide, in simpler words. Never drop a point to save space.
 5. When done, summarize which sections were added or changed. Do not commit.
 
